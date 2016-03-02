@@ -18,44 +18,37 @@
                     First, we need a test database to check user login information against.  Log in to mySQL, then make and shift focus to a new database called test-auth.
                 </p>
                 <div class="code-example">
-                    CREATE DATABASE test_auth;
-                    <br/>
-                    USE test_auth;
+                    <pre>
+CREATE DATABASE test_auth;
+USE test_auth;</pre>
+
                 </div>
                 <p>
                     Next, create a table to store user information.  Each entry in the table should have a user_id uniquely identifying it, a username, a password, and a number indicating the type of user (0 for basic privileges, 1 for moderator, 2 for administrator).
                 </p>
                 <div class="code-example">
-                    CREATE TABLE users(
-                    <br/>
-                    user_id CHAR(8) PRIMARY KEY,
-                    <br/>
-                    username VARCHAR(50),
-                    <br/>
-                    password VARCHAR(50),
-                    <br/>
-                    type TINYINT);
+                    <pre>
+CREATE TABLE users(
+    user_id CHAR(8) PRIMARY KEY,
+    username VARCHAR(50),
+    password VARCHAR(50),
+    type TINYINT);</pre>
+
                 </div>
                 <p>Now, insert a test user into the table.</p>
                 <div class="code-example">
-                    INSERT INTO users VALUES('12345678',
-                    <br />
-                    'fluffybunny1',
-                    <br />
-                    'junebug',
-                    <br />
-                    0);
+                    <pre>INSERT INTO users VALUES('12345678', 'fluffybunny1', 'junebug', 0);</pre>
                 </div>
                 <p>
                     We’d like to simulate a basic user’s access to the database.  So, log into MySQL as root and type the following:
                 </p>
                 <div class="code-example">
-                    CREATE USER 'basic_user'@'localhost' IDENTIFIED BY ‘&lt;PASSWORD&gt;’;
+                    <pre>CREATE USER 'basic_user'@'localhost' IDENTIFIED BY ‘&lt;PASSWORD&gt;’;</pre>
                 </div>
                 <p>
                     This will create a MySQL user named “basic_user” with &lt;PASSWORD&gt; as their password. Users in MySQL allow for you to regulate who has access to what parts of your database. In production, you should store at the very least a hash of the password in the database, but for simplicity’s sake we will present a basic solution for you to build on.
                 </p>
-                <div class="code-example">GRANT SELECT ON user_auth.* TO basic_user;</div>
+                <div class="code-example"><pre>GRANT SELECT ON user_auth.* TO basic_user;</pre></div>
                 <p>
                     This will grant only the permissions to view the database to the basic users. This is not required, but a good thing to know how to do and be comfortable with. In real practice, a basic user shouldn’t be able to view the users and their passwords, but, for these purposes, they can. You can set up your own permissions as they pertain to your project.
                 </p>
@@ -71,42 +64,33 @@
                     The next step is to define connection settings for the database in /src/settings.php.   In the associative array called 'settings', add a key value pair for the database.
                 </p>
                 <div class="code-example">
-                    'login_dbConn' => [
-                    <br />
-                    'username' => '&lt;YOUR_MYSQL_USERNAME&gt;',
-                    <br />
-                    'password' => '&lt;YOUR_MYSQL_PASSWORD&gt;',
-                    <br />
-                    'host' => 'localhost',
-                    <br />
-                    'dbname' => 'test_auth',
-                    <br />
-                    'db' => 'mysql'
-                    <br />
-                    ]
+                    <pre>
+'login_dbConn' => [
+    'username' => '&lt;YOUR_MYSQL_USERNAME&gt;',
+    'password' => '&lt;YOUR_MYSQL_PASSWORD&gt;',
+    'host' => 'localhost',
+    'dbname' => 'test_auth',
+    'db' => 'mysql'
+    ]</pre>
+
                 </div>
                 <p>Then, in /src/dependencies.php, define a new container for the database settings.</p>
                 <div class="code-example">
-                    $container['login_dbConn'] = function ($c) {
-                        <br />
-                    	$settings = $c->get('settings')['login_dbConn'];
-                        <br />
-                        <br />
-                    	$connString = $settings['db'] . ':host=' . $settings['host'];
-                        <br />
-                    	$connString .= ';dbname=' . $settings['dbname'] . ';charset=utf8mb4';
-                        <br />
-                        <br />
-                    	$db = new PDO($connString, $settings['username'], $settings['password']);
-                        <br />
-                        <br />
-                    	return $db;
-                        <br />
-                    };
+                    <pre>
+$container['login_dbConn'] = function ($c)
+{
+	$settings = $c->get('settings')['login_dbConn'];
+
+	$connString = $settings['db'] . ':host=' . $settings['host'];
+	$connString .= ';dbname=' . $settings['dbname'] . ';charset=utf8mb4';
+
+	$db = new PDO($connString, $settings['username'], $settings['password']);
+
+	return $db;
+};</pre>
 
                 </div>
                 <p>This will allow us to easily establish a connection to the database later in the server-side code.</p>
-
             </div>
         </div>
         <div class="panel panel-default">
@@ -116,43 +100,31 @@
                     Next, we need to create a test webpage with a basic form that we can use to log in.  In the "templates" directory of your project root, create a new file called "login.phtml".   In this file, we'll start with the bare-bones structure of any html page.
                 </p>
                 <div class="code-example">
-                    &lt;!DOCTYPE&gt;
-                    <br />
-                    &lt;html&gt;
-                    <br />
-                    &lt;head&gt;
-                    <br />
-                    &lt;/head&gt;
-                    <br />
-                    &lt;body&gt;
-                    <br />
-                    &lt;/body&gt;
-                    <br />
-                    &lt;/html&gt;
+                    <pre>
+&lt;!DOCTYPE&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+
                 </div>
                 <p>
                     Between the &lt;body&gt; tags, we're going to create a basic form where the user can enter their username and password in an attempt to log in.
                 </p>
                 <div class="code-example">
-                    &lt;body&gt;
-                    <br />
-                    	&lt;p&gt;Login&lt;/p&gt;
-                        <br />
-                    	&lt;form name="loginform" onSubmit="return validateForm();" action="./login" method="post"&gt;
-                        <br />
-                    	    &lt;label&gt;Username&lt;/label&gt;
-                            <br />
-                    	    &lt;input type="text" name="usr" placeholder="username"&gt;
-                            <br />
-                    	    &lt;label&gt;Password&lt;/label&gt;
-                            <br />
-                    	    &lt;input type="password" name="pword" placeholder="password"&gt;
-                            <br />
-                    	    &lt;input type="submit" value="Login"/&gt;
-                            <br />
-                    	&lt;/form&gt;
-                        <br />
-                    &lt;/body&gt;
+                    <pre>
+&lt;body&gt;
+	&lt;p&gt;Login&lt;/p&gt;
+	&lt;form name="loginform" onSubmit="return validateForm();" action="./login" method="post"&gt;
+	    &lt;label&gt;Username&lt;/label&gt;
+	    &lt;input type="text" name="usr" placeholder="username"&gt;
+	    &lt;label&gt;Password&lt;/label&gt;
+	    &lt;input type="password" name="pword" placeholder="password"&gt;
+	    &lt;input type="submit" value="Login"/&gt;
+	&lt;/form&gt;
+&lt;/body&gt;</pre>
                 </div>
                 <p>
                     The "name" attribute in the form and input tags assigns a name to the elements so that they can be referred to later..  The "onSubmit" attribute indicates what will be done once the user clicks the Submit button.  In this case, when the user clicks the Submit button, a JavaScript function validateForm() will be called.  The "action" attribute and the "method" attribute define the API call that will be made, if, when the Submit button is clicked, validateForm() returns True.
@@ -161,27 +133,23 @@
                     Next, we need to write a script to validate the user's login information. To get the javascript without any installation, between the head tags, place the following:
                 </p>
                 <div class="code-example">
-                    &lt;head&gt;
-                        &lt;script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"&gt;&lt;/script&gt;
-                    &lt;/head&gt;
+                    <pre>
+&lt;head&gt;
+    &lt;script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"&gt;&lt;/script&gt;
+&lt;/head&gt;</pre>
                 </div>
                 <p>
                     Between the closing &lt;/body&gt; tag and the closing &lt;/html&gt; tag, we're going to write our script.
                 </p>
                 <div class="code-example">
-                    &lt;script&gt;
-                    <br />
-                        function validateForm()
-                        <br />
-                        {
-                            <br />
-                            var un = document.loginform.usr.value;
-                            <br />
-                            var pw = document.loginform.pword.value;
-                            <br />
-                        }
-                        <br />
-                    &lt;/script&gt;
+                <pre>
+&lt;script&gt;
+    function validateForm()
+    {
+        var un = document.loginform.usr.value;
+        var pw = document.loginform.pword.value;
+    }
+&lt;/script&gt;</pre>
                 </div>
                 <p>
                     Now, when the user enters their username and password and clicks the Submit button, a POST request will be made to the server.
@@ -195,93 +163,76 @@
                     The next step is to write the server-side code to handle it.  In the routes.php file in the "src" directory, we need to define a POST function for '/login':
                 </p>
                 <div class="code-example">
-                    $app->post('/login', function ($request, $response, $args) {
-                        <br />
-                        <br />
-                        )};
+                    <pre>
+$app->post('/login', function ($request, $response, $args)
+{
+
+});</pre>
+
                 </div>
                 <p>
                     In the body of this function, start by getting the username and password from the POST. $_POST is a variable that “comes with” the app at the start of the session. It contains pieces of information sent in the request. Similarly, there are variables called $_GET, $_PUT, and $_DELETE, which store information sent in those types of requests.
                 </p>
                 <div class="code-example">
-                    $uName = $_POST['usr'];
-                    <br />
-                    $pWord = $_POST['pword'];
+                    <pre>
+$uName = $_POST['usr'];
+$pWord = $_POST['pword'];</pre>
                 </div>
                 <p>
                     Now, establish a connection to the database using the settings we defined earlier in settings.php and query it for the submitted username and password.
                 </p>
                 <div class="code-example">
-                    $db = $this->login_dbConn;
-                    <br />
-                    $db_password = $db->query("SELECT password FROM users WHERE username = '" . $uName . "'")->fetch(PDO::FETCH_ASSOC)['password'];
+                    <pre>
+$db = $this->login_dbConn;
+$db_password = $db->query("SELECT password FROM users WHERE username = '" . $uName . "'")->fetch(PDO::FETCH_ASSOC)['password'];</pre>
+
                 </div>
                 <p>
                     Finally, we would like to show some proof of concept that the validation of the user credentials works, so we will check the password from the database against the submitted password. Again, this method of password storage and validation is extremely insecure and should never be used in actual production, but this is intended to give you a barebones example that you can flesh out later. So, based on the user’s password, redirect them to different landing pages.
                 </p>
                 <div class="code-example">
-                    if($db_password != $pWord)
-                    <br />
-                    {
-                        <br />
-                    	return $response->withRedirect('/test_invalid_login');
-                        <br />
-                    }
-                    <br />
-                    else
-                    <br />
-                    {
-                        <br />
-                    	return $response->withRedirect('/test_successful_login');
-                        <br />
-                    }
+                    <pre>
+if($db_password != $pWord)
+{
+	return $response->withRedirect('/test_invalid_login');
+}
+else
+{
+	return $response->withRedirect('/test_successful_login');
+}</pre>
                 </div>
                 <p>
                     Now, define the two routes that the previous route wants to redirect you to. In practice, if the user’s credentials are incorrect, you could redirect them back to the login page and if they are correct, direct them to some home page. For now, we will just display a message in the browser describing the success or failure of the “login”.
                 </p>
                 <div class="code-example">
-                    <br />
-                    $app->get('/test_invalid_login', function ($request, $response, $args)
-                    <br />
-                    {
-                        <br />
-                    	return $response->write('Invalid username/password combination');
-                        <br />
-                    });
-                    <br />
-                    <br />
-                    $app->get('/test_successful_login', function ($request, $response, $args)
-                    <br />
-                    {
-                        <br />
-                    	return $response->write('Valid username/password combination. You have successfully logged in.');
-                        <br />
-                    });
+                    <pre>
+$app->get('/test_invalid_login', function ($request, $response, $args)
+{
+	return $response->write('Invalid username/password combination');
+});
 
+$app->get('/test_successful_login', function ($request, $response, $args)
+{
+	return $response->write('Valid username/password combination. You have successfully logged in.');
+});</pre>
                 </div>
                 <p>Finally, we need a route to make it to the simple HTML form we created earlier.</p>
                 <div class="code-example">
-                    $app->get('/login', function ($request, $response, $args)
-                    <br />
-                    {
-                        <br />
-                    	return $this->renderer->render($response, 'login.phtml', $args);
-                        <br />
-                    });
+                    <pre>
+$app->get('/login', function ($request, $response, $args)
+{
+	return $this->renderer->render($response, 'login.phtml', $args);
+});</pre>
+
                 </div>
                 <p>
                     The setup is complete. Now, to test, navigate to “&lt;PROJECT_DIRECTORY&gt;/login” in your browser and enter the username and password combination you inserted into the database (make sure it is the entry in the database, not the user info for your MySQL user). If you set everything up correctly, you should see “Valid username/password combination. You have successfully logged in.” show up in the browser.
                 </p>
-                <p>
-                    Congratulations! You now should have a basic idea of how the front-end fits in with the back-end as it pertains to user login information.
-                </p>
-
+                <p>Congratulations! You now should have a basic idea of how the front-end fits in with the back-end as it pertains to user login information.</p>
             </div>
         </div>
         <div class="panel panel-default">
-            <div class="panel-heading">
-                Some Notes
-            </div>
+            <div class="panel-heading">Some Notes</div>
             <div class="panel-body">
                 <ul>
                     <li>In production, do not send sensitive user information over HTTP, use HTTPS instead.</li>
