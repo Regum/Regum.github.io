@@ -153,9 +153,39 @@
                     	&lt;/form&gt;
                         <br />
                     &lt;/body&gt;
-                    <br />
-
                 </div>
+                <p>
+                    The "name" attribute in the form and input tags assigns a name to the elements so that they can be referred to later..  The "onSubmit" attribute indicates what will be done once the user clicks the Submit button.  In this case, when the user clicks the Submit button, a JavaScript function validateForm() will be called.  The "action" attribute and the "method" attribute define the API call that will be made, if, when the Submit button is clicked, validateForm() returns True.
+                </p>
+                <p>
+                    Next, we need to write a script to validate the user's login information. To get the javascript without any installation, between the head tags, place the following:
+                </p>
+                <div class="code-example">
+                    &lt;head&gt;
+                        &lt;script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"&gt;&lt;/script&gt;
+                    &lt;/head&gt;
+                </div>
+                <p>
+                    Between the closing &lt;/body&gt; tag and the closing &lt;/html&gt; tag, we're going to write our script.
+                </p>
+                <div class="code-example">
+                    &lt;script&gt;
+                    <br />
+                        function validateForm()
+                        <br />
+                        {
+                            <br />
+                            var un = document.loginform.usr.value;
+                            <br />
+                            var pw = document.loginform.pword.value;
+                            <br />
+                        }
+                        <br />
+                    &lt;/script&gt;
+                </div>
+                <p>
+                    PLEASE ASK US FOR THE REMAINDER OF THE TUTORIAL. IT'S IN A WORD DOC.
+                </p>
             </div>
         </div>
     </div>
