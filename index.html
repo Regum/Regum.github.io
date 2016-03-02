@@ -184,8 +184,111 @@
                     &lt;/script&gt;
                 </div>
                 <p>
-                    PLEASE ASK US FOR THE REMAINDER OF THE TUTORIAL. IT'S IN A WORD DOC.
+                    Now, when the user enters their username and password and clicks the Submit button, a POST request will be made to the server.
                 </p>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading">Step 4: Server-side Authentication</div>
+            <div class="panel-body">
+                <p>
+                    The next step is to write the server-side code to handle it.  In the routes.php file in the "src" directory, we need to define a POST function for '/login':
+                </p>
+                <div class="code-example">
+                    $app->post('/login', function ($request, $response, $args) {
+                        <br />
+                        <br />
+                        )};
+                </div>
+                <p>
+                    In the body of this function, start by getting the username and password from the POST. $_POST is a variable that “comes with” the app at the start of the session. It contains pieces of information sent in the request. Similarly, there are variables called $_GET, $_PUT, and $_DELETE, which store information sent in those types of requests.
+                </p>
+                <div class="code-example">
+                    $uName = $_POST['usr'];
+                    <br />
+                    $pWord = $_POST['pword'];
+                </div>
+                <p>
+                    Now, establish a connection to the database using the settings we defined earlier in settings.php and query it for the submitted username and password.
+                </p>
+                <div class="code-example">
+                    $db = $this->login_dbConn;
+                    <br />
+                    $db_password = $db->query("SELECT password FROM users WHERE username = '" . $uName . "'")->fetch(PDO::FETCH_ASSOC)['password'];
+                </div>
+                <p>
+                    Finally, we would like to show some proof of concept that the validation of the user credentials works, so we will check the password from the database against the submitted password. Again, this method of password storage and validation is extremely insecure and should never be used in actual production, but this is intended to give you a barebones example that you can flesh out later. So, based on the user’s password, redirect them to different landing pages.
+                </p>
+                <div class="code-example">
+                    if($db_password != $pWord)
+                    <br />
+                    {
+                        <br />
+                    	return $response->withRedirect('/test_invalid_login');
+                        <br />
+                    }
+                    <br />
+                    else
+                    <br />
+                    {
+                        <br />
+                    	return $response->withRedirect('/test_successful_login');
+                        <br />
+                    }
+                </div>
+                <p>
+                    Now, define the two routes that the previous route wants to redirect you to. In practice, if the user’s credentials are incorrect, you could redirect them back to the login page and if they are correct, direct them to some home page. For now, we will just display a message in the browser describing the success or failure of the “login”.
+                </p>
+                <div class="code-example">
+                    <br />
+                    $app->get('/test_invalid_login', function ($request, $response, $args)
+                    <br />
+                    {
+                        <br />
+                    	return $response->write('Invalid username/password combination');
+                        <br />
+                    });
+                    <br />
+                    <br />
+                    $app->get('/test_successful_login', function ($request, $response, $args)
+                    <br />
+                    {
+                        <br />
+                    	return $response->write('Valid username/password combination. You have successfully logged in.');
+                        <br />
+                    });
+
+                </div>
+                <p>Finally, we need a route to make it to the simple HTML form we created earlier.</p>
+                <div class="code-example">
+                    $app->get('/login', function ($request, $response, $args)
+                    <br />
+                    {
+                        <br />
+                    	return $this->renderer->render($response, 'login.phtml', $args);
+                        <br />
+                    });
+                </div>
+                <p>
+                    The setup is complete. Now, to test, navigate to “&lt;PROJECT_DIRECTORY&gt;/login” in your browser and enter the username and password combination you inserted into the database (make sure it is the entry in the database, not the user info for your MySQL user). If you set everything up correctly, you should see “Valid username/password combination. You have successfully logged in.” show up in the browser.
+                </p>
+                <p>
+                    Congratulations! You now should have a basic idea of how the front-end fits in with the back-end as it pertains to user login information.
+                </p>
+
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                Some Notes
+            </div>
+            <div class="panel-body">
+                <ul>
+                    <li>In production, do not send sensitive user information over HTTP, use HTTPS instead.</li>
+                    <li>Make sure to come up with a secure way to store the users’ passwords. </li>
+                    <li>In future iterations, rather than redirecting the user to the proper page, when the user logs in, you can generate a random string to be used as a token that you can send back in the HTTP response, which the front-end can then send back on subsequent requests to the server. This allows you to validate your users without them having to login every time they view a page.</li>
+                    <li>Make sure your app can handle this validation. This is a good use for Slim middleware. </li>
+                </ul>
             </div>
         </div>
     </div>
